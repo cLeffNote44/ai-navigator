@@ -98,15 +98,24 @@ const AllToolsPage: React.FC<AllToolsPageProps> = ({ tools }) => {
         </div>
 
         <div className="mt-6 flex flex-wrap gap-2">
-          {allCategories.map(category => (
-            <button
-              key={category}
-              onClick={() => handleCategoryToggle(category)}
-              className={`px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest rounded-full border transition-all duration-200 ${selectedCategories.has(category) ? 'bg-foreground text-background border-foreground' : 'bg-background text-muted-foreground border-border hover:border-primary/50'}`}
-            >
-              {category}
-            </button>
-          ))}
+          {allCategories.map(category => {
+            const isActive = selectedCategories.has(category);
+            return (
+              <button
+                key={category}
+                onClick={() => handleCategoryToggle(category)}
+                aria-pressed={isActive}
+                className={`px-3 py-1.5 text-[10px] font-mono uppercase tracking-widest rounded-full border transition-all duration-200 ${
+                  isActive
+                    ? 'bg-primary text-primary-foreground border-primary font-bold glow-accent-soft scale-[1.02]'
+                    : 'bg-secondary/30 text-muted-foreground border-border hover:border-primary/50 hover:text-foreground hover:bg-secondary/60'
+                }`}
+              >
+                {isActive && <span className="mr-1">✓</span>}
+                {category}
+              </button>
+            );
+          })}
         </div>
       </div>
 
