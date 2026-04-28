@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { AITool, Difficulty, Pricing } from '../types';
-import { getToolDetails } from '../services/geminiService';
+import { getToolDetails } from '../services/aiService';
 import LoadingSpinner from './LoadingSpinner';
 import { AI_TOOLS, CATEGORY_COLORS } from '../constants';
 
@@ -95,7 +95,7 @@ const ToolDetailModal: React.FC<ToolDetailModalProps> = ({ tool, onClose }) => {
                 <LoadingSpinner />
                 <div className="text-center">
                    <p className="text-white font-bold tracking-tight">Synthesizing Educational Content...</p>
-                   <p className="text-xs text-slate-500 mt-2 uppercase tracking-widest">Powered by Gemini Large Language Models</p>
+                   <p className="text-xs text-slate-500 mt-2 uppercase tracking-widest">Powered by Cloudflare Workers AI</p>
                 </div>
               </div>
             ) : (

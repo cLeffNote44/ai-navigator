@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { AITool, TechStack } from '../types';
-import { generateGuidedStack } from '../services/geminiService';
+import { generateGuidedStack } from '../services/aiService';
 import {
   DndContext,
   closestCenter,

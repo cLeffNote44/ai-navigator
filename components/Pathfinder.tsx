@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AITool, TechStack, Difficulty } from '../types';
-import { generateGuidedStack } from '../services/geminiService';
+import { generateGuidedStack } from '../services/aiService';
 import LoadingSpinner from './LoadingSpinner';
 
 interface PathfinderProps {
