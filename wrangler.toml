@@ -1,0 +1,10 @@
+name = "ai-navigator"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "dist"
+
+# Workers AI binding — exposes env.AI inside Pages Functions.
+# In production, this same binding is configured automatically when you
+# enable the Workers AI integration in the Cloudflare Pages dashboard
+# (Settings → Functions → Bindings → Workers AI).
+[ai]
+binding = "AI"

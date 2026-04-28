@@ -78,7 +78,7 @@ const RelationMap: React.FC<RelationMapProps> = ({ tools, onToolClick }) => {
       .attr('xoverflow', 'visible')
       .append('svg:path')
       .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
-      .attr('fill', '#94a3b8')
+      .attr('fill', '#a1a1aa')
       .style('stroke', 'none');
 
     const g = svg.append('g');
@@ -87,8 +87,8 @@ const RelationMap: React.FC<RelationMapProps> = ({ tools, onToolClick }) => {
       .selectAll('line')
       .data(links)
       .join('line')
-      .attr('stroke', '#334155')
-      .attr('stroke-opacity', 0.6)
+      .attr('stroke', '#2a2a3e')
+      .attr('stroke-opacity', 0.7)
       .attr('stroke-width', 2)
       .attr('marker-end', 'url(#arrowhead)');
 
@@ -109,21 +109,21 @@ const RelationMap: React.FC<RelationMapProps> = ({ tools, onToolClick }) => {
     node.append('circle')
       .attr('r', d => d.category === ToolCategory.CONCEPT ? 14 : 10)
       .attr('fill', d => {
-        if (d.category === ToolCategory.CONCEPT) return '#ffffff';
-        if (d.category.includes('Language')) return '#0ea5e9';
-        if (d.category.includes('Framework')) return '#f43f5e';
-        if (d.category.includes('Database')) return '#10b981';
-        return '#64748b';
+        if (d.category === ToolCategory.CONCEPT) return '#a78bfa';
+        if (d.category.includes('Language')) return '#8b5cf6';
+        if (d.category.includes('Framework')) return '#f472b6';
+        if (d.category.includes('Database')) return '#06b6d4';
+        return '#71717a';
       })
-      .attr('stroke', '#000000')
+      .attr('stroke', '#050508')
       .attr('stroke-width', 2)
-      .style('filter', d => d.category === ToolCategory.CONCEPT ? 'drop-shadow(0 0 4px rgba(255,255,255,0.4))' : 'none');
+      .style('filter', d => d.category === ToolCategory.CONCEPT ? 'drop-shadow(0 0 6px rgba(167,139,250,0.6))' : 'none');
 
     node.append('text')
       .attr('x', 16)
       .attr('y', 4)
       .text(d => d.name)
-      .attr('fill', d => d.category === ToolCategory.CONCEPT ? '#ffffff' : '#94a3b8')
+      .attr('fill', d => d.category === ToolCategory.CONCEPT ? '#fafafa' : '#a1a1aa')
       .style('font-family', '"JetBrains Mono", monospace')
       .style('font-size', d => d.category === ToolCategory.CONCEPT ? '12px' : '10px')
       .style('font-weight', 'bold')
@@ -170,8 +170,8 @@ const RelationMap: React.FC<RelationMapProps> = ({ tools, onToolClick }) => {
   }, [nodes, links, tools, onToolClick]);
 
   return (
-    <div className="w-full bg-slate-900/50 rounded-xl border border-slate-800 overflow-hidden relative">
-      <div className="absolute top-4 left-4 z-10 bg-slate-900/80 p-2 rounded border border-slate-700 text-xs text-slate-400 pointer-events-none">
+    <div className="w-full glass rounded-xl overflow-hidden relative">
+      <div className="absolute top-4 left-4 z-10 glass p-2 rounded text-xs text-muted-foreground font-mono pointer-events-none">
         Drag to move nodes • Scroll to zoom
       </div>
       <svg ref={svgRef} className="w-full h-full cursor-move" />

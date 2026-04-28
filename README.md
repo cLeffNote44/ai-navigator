@@ -8,7 +8,7 @@
 
 Semantic search, interactive skill trees with progress tracking, drag-and-drop stack builder with AI simulation, personalized dashboard, intelligent chat assistant, tool comparisons, roadmap generator, and one-click starter exports.
 
-Built with **shadcn/ui**, Vercel AI SDK, and a comprehensive 2026 AI catalog.
+Built with **shadcn/ui**, **Cloudflare Workers AI** (Llama 3.3), and a comprehensive 2026 AI catalog.
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -51,49 +51,64 @@ Built with **shadcn/ui**, Vercel AI SDK, and a comprehensive 2026 AI catalog.
    npm install
    ```
 
-3. Add your Gemini API key (for AI features):
-   ```bash
-   cp .env.example .env.local
-   # Edit .env.local and add GEMINI_API_KEY=your_key_here
-   ```
-
-4. Run the development server:
+3. Run the static dev server (catalog browsing, no AI features):
    ```bash
    npm run dev
    ```
+   Open [http://localhost:3000](http://localhost:3000).
 
-Open [http://localhost:5173](http://localhost:5173) to explore.
+4. To exercise the AI features locally, run the full stack with Wrangler:
+   ```bash
+   npm run build
+   npm run pages:dev   # serves dist/ + functions/, binds Workers AI
+   ```
+   Wrangler will prompt you to log in to Cloudflare on first run.
 
 **Pro tip**: Press `Cmd/Ctrl + K` anywhere for instant semantic search.
 
 ## Tech Stack
 
 - **Frontend**: React 19, TypeScript, Vite, shadcn/ui, Tailwind CSS v4, Recharts, @dnd-kit
-- **AI Layer**: Vercel AI SDK (@ai-sdk/google), structured outputs with Zod, Gemini 1.5 Flash
+- **AI Layer**: Cloudflare Workers AI (Llama 3.3 70B), JSON-schema structured outputs, Zod validation
+- **Hosting**: Cloudflare Pages (static) + Pages Functions (API proxy)
 - **Styling**: Fully tokenized dark/light theme with shadcn primitives
-- **State**: React hooks + localStorage (Supabase integration ready)
+- **State**: React hooks + localStorage
 
 ## Project Structure
 
 ```
 ai-navigator/
 ├── components/
-│   ├── ui/              # shadcn/ui components
+│   ├── ui/                       # shadcn/ui components
 │   ├── SkillTree.tsx
 │   ├── StackBuilder.tsx
-│   ├── AIChat.tsx
 │   └── ...
 ├── pages/
 │   ├── DashboardPage.tsx
 │   ├── AllToolsPage.tsx
 │   └── ...
-├── services/geminiService.ts   # AI integration
-├── constants.tsx               # Expanded 2026 AI catalog
+├── functions/
+│   └── api/
+│       ├── tool-details.ts       # Workers AI: free-form markdown
+│       └── generate-stack.ts     # Workers AI: structured JSON
+├── services/aiService.ts         # Client → Pages Function calls
+├── constants.tsx                 # Expanded 2026 AI catalog
 ├── types.ts
 ├── App.tsx
-├── index.css                   # shadcn theme + custom grid
+├── index.css                     # shadcn theme + custom grid
+├── wrangler.toml                 # Cloudflare config (AI binding)
 └── README.md
 ```
+
+## Deploying to Cloudflare Pages
+
+1. Push the repo to GitHub.
+2. In the Cloudflare dashboard, **Pages → Create → Connect to Git**, select the repo.
+3. Build settings: command `npm run build`, output directory `dist`.
+4. After the first deploy, go to **Settings → Functions → Bindings**, add a **Workers AI** binding named `AI`.
+5. Add your custom domain (e.g. `leffel.io`) under **Custom Domains**. Cloudflare handles SSL automatically.
+
+No API keys, no third-party services, no monthly subscriptions — billing is per Workers AI neuron on your Cloudflare account.
 
 ## Roadmap
 

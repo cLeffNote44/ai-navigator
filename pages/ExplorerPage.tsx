@@ -22,10 +22,10 @@ const ExplorerPage: React.FC<ExplorerPageProps> = ({ tools, onToolSelect }) => {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-extrabold text-foreground tracking-tight">AI Navigator Explorer</h2>
+          <h2 className="text-3xl font-bold text-foreground tracking-tight">AI Navigator <span className="text-gradient-subtle">Explorer</span></h2>
           <p className="mt-2 text-lg text-muted-foreground max-w-2xl">
-            Visualize the relations between AI models, frameworks, and infrastructure. 
-            See how technologies interconnect to form complete tech stacks. Press <span className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs">⌘K</span> for global search.
+            Visualize the relations between AI models, frameworks, and infrastructure.
+            See how technologies interconnect to form complete tech stacks. Press <span className="font-mono bg-secondary px-1.5 py-0.5 rounded text-xs">⌘K</span> for global search.
           </p>
         </div>
       </div>
@@ -34,9 +34,9 @@ const ExplorerPage: React.FC<ExplorerPageProps> = ({ tools, onToolSelect }) => {
         <div className="lg:col-span-3">
           <RelationMap tools={tools} onToolClick={handleToolClick} />
         </div>
-        
+
         <div className="space-y-6">
-          <div className="bg-card border border-border rounded-xl p-6">
+          <div className="glass rounded-xl p-6">
             <h3 className="text-lg font-semibold mb-4 flex items-center">
               <span className="w-2 h-2 rounded-full bg-primary mr-2"></span>
               Discovery Panel
@@ -44,7 +44,7 @@ const ExplorerPage: React.FC<ExplorerPageProps> = ({ tools, onToolSelect }) => {
             {selectedTool ? (
               <div className="space-y-4">
                 <ToolCard tool={selectedTool} onClick={() => handleToolClick(selectedTool)} />
-                <button 
+                <button
                   onClick={() => setSelectedTool(null)}
                   className="w-full py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
@@ -60,23 +60,23 @@ const ExplorerPage: React.FC<ExplorerPageProps> = ({ tools, onToolSelect }) => {
             )}
           </div>
 
-          <div className="bg-card border border-border rounded-xl p-6">
-            <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-4">Legend</h4>
+          <div className="glass rounded-xl p-6">
+            <h4 className="text-sm font-mono text-muted-foreground uppercase tracking-wider mb-4">Legend</h4>
             <div className="space-y-4">
-               <div className="flex items-center text-[10px] font-black text-foreground uppercase tracking-widest">
-                  <span className="w-3 h-3 rounded-full bg-white mr-3 shadow-[0_0_8px_rgba(255,255,255,0.5)]"></span>
+               <div className="flex items-center text-[10px] font-mono text-foreground uppercase tracking-widest">
+                  <span className="w-3 h-3 rounded-full mr-3 shadow-[0_0_8px_rgba(167,139,250,0.6)]" style={{ background: '#a78bfa' }}></span>
                   Core Concepts
                </div>
-               <div className="flex items-center text-[10px] font-black text-primary uppercase tracking-widest">
-                  <span className="w-3 h-3 rounded-full bg-primary mr-3"></span>
+               <div className="flex items-center text-[10px] font-mono uppercase tracking-widest" style={{ color: '#8b5cf6' }}>
+                  <span className="w-3 h-3 rounded-full mr-3" style={{ background: '#8b5cf6' }}></span>
                   Language Models
                </div>
-               <div className="flex items-center text-[10px] font-black text-emerald-500 uppercase tracking-widest">
-                  <span className="w-3 h-3 rounded-full bg-emerald-500 mr-3"></span>
+               <div className="flex items-center text-[10px] font-mono uppercase tracking-widest" style={{ color: '#06b6d4' }}>
+                  <span className="w-3 h-3 rounded-full mr-3" style={{ background: '#06b6d4' }}></span>
                   Infrastructure
                </div>
-               <div className="flex items-center text-[10px] font-black text-rose-500 uppercase tracking-widest">
-                  <span className="w-3 h-3 rounded-full bg-rose-500 mr-3"></span>
+               <div className="flex items-center text-[10px] font-mono uppercase tracking-widest" style={{ color: '#f472b6' }}>
+                  <span className="w-3 h-3 rounded-full mr-3" style={{ background: '#f472b6' }}></span>
                   Frameworks
                </div>
             </div>
