@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { AITool } from '../types';
 import { AI_TOOLS } from '../constants';
-import SkillTree from '../components/SkillTree';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
-import { Progress } from '../components/ui/progress'; // Assume we add this via shadcn if not present
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Trophy, Target, BookOpen, TrendingUp } from 'lucide-react';
+import { Progress } from '../components/ui/progress';
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
+import { Trophy, Target, BookOpen } from 'lucide-react';
 
-const COLORS = ['#0ea5e9', '#10b981', '#f43f5e', '#8b5cf6'];
+const COLORS = ['#8b5cf6', '#06b6d4', '#f472b6', '#22c55e'];
 
 const DashboardPage: React.FC = () => {
   const [completedTools, setCompletedTools] = useState<string[]>([]);
@@ -179,8 +177,6 @@ const DashboardPage: React.FC = () => {
               )}
             </CardContent>
           </Card>
-
-          <SkillTree tools={AI_TOOLS} onToolSelect={() => {}} />
         </div>
       </div>
 
