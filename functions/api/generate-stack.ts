@@ -36,42 +36,6 @@ const TechStackSchema = z.object({
     .optional(),
 });
 
-const jsonSchema = {
-  type: 'object',
-  properties: {
-    id: { type: 'string' },
-    stackName: { type: 'string' },
-    description: { type: 'string' },
-    difficulty: { type: 'string', enum: ['Beginner', 'Intermediate', 'Advanced'] },
-    estimatedCost: { type: 'string' },
-    tools: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          id: { type: 'string' },
-          name: { type: 'string' },
-          justification: { type: 'string' },
-        },
-        required: ['id', 'name', 'justification'],
-      },
-    },
-    connections: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          from: { type: 'string' },
-          to: { type: 'string' },
-          label: { type: 'string' },
-        },
-        required: ['from', 'to', 'label'],
-      },
-    },
-  },
-  required: ['id', 'stackName', 'description', 'difficulty', 'estimatedCost', 'tools'],
-};
-
 function extractJson(text: string): string {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (fenced) return fenced[1].trim();
@@ -99,31 +63,55 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   }
 
   // Compact catalog representation - one line per tool, terse format.
-  // Cuts the prompt size roughly in half vs. the full "name (id: x, category: y)" form.
   const toolsInfo = tools.map((t) => `${t.id}|${t.name}|${t.category}`).join('\n');
+
+  // Explicit JSON shape example. Smaller models follow concrete examples better
+  // than abstract schema descriptions.
+  const jsonExample = `{
+  "id": "rag-chatbot",
+  "stackName": "Beginner RAG Chatbot",
+  "description": "A simple chatbot that answers questions from your docs.",
+  "difficulty": "Beginner",
+  "estimatedCost": "Free tier covers most usage",
+  "tools": [
+    {"id": "claude-haiku-4-5", "name": "Claude Haiku 4.5", "justification": "Fast and cheap LLM for the chat responses."},
+    {"id": "pinecone", "name": "Pinecone", "justification": "Stores document embeddings for retrieval."}
+  ],
+  "connections": [
+    {"from": "pinecone", "to": "claude-haiku-4-5", "label": "retrieved context"}
+  ]
+}`;
 
   const userPrompt = `Goal: "${goal}"
 
-Catalog (id|name|category, one per line):
+Tools you may pick from (id|name|category, one per line):
 ${toolsInfo}
 
-Architect a beginner-friendly tech stack of 3-5 tools FROM THE CATALOG ABOVE.
-- Use real ids exactly as given.
-- "difficulty" must be exactly: Beginner, Intermediate, or Advanced.
-- "id" for the stack is a short kebab-case slug.
-- Be concise. Return ONLY JSON matching the schema. No prose, no markdown fence.`;
+Pick 3-5 tools FROM THIS LIST that fit the goal. Use the exact ids shown.
+
+Return JSON in EXACTLY this shape (no other text, no markdown):
+${jsonExample}
+
+Rules:
+- "difficulty" is one of: Beginner, Intermediate, Advanced.
+- Every tool "id" MUST appear in the list above.
+- Justifications should be one sentence each, beginner-friendly.
+- Stack "id" is a short kebab-case slug.`;
 
   const systemPrompt =
-    'You are an AI architect. Reply with VALID JSON ONLY matching the schema. No explanations, no markdown fences.';
+    'You output ONLY valid JSON, nothing else. No prose, no markdown fences. Match the example shape exactly.';
 
   async function callModel(): Promise<unknown> {
-    const result = (await env.AI.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
+    // 8B-fast: ~10x faster than 70B-fp8-fast, plenty smart for "pick from list" tasks.
+    // Drop json_schema mode (slow, often unsupported on smaller models) in favor of
+    // json_object + concrete example in the prompt.
+    const result = (await env.AI.run('@cf/meta/llama-3.1-8b-instruct-fast', {
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
       max_tokens: 800,
-      response_format: { type: 'json_schema', json_schema: jsonSchema },
+      response_format: { type: 'json_object' },
     })) as { response?: string };
 
     const raw = result.response ?? '';
