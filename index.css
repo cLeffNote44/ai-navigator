@@ -1,87 +1,69 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 @import "tailwindcss";
 
+/*
+ * Theme tokens — synchronized with leffel.io.
+ * In Tailwind v4, theme tokens MUST live in @theme to generate utility
+ * classes (bg-primary, text-foreground, border-border, etc.).
+ */
 @theme {
   --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-}
 
-/* Theme tokens — synchronized with leffel.io for visual coherence */
-:root {
   /* Surfaces */
-  --background: 240 33% 3%;          /* #050508 */
-  --foreground: 0 0% 98%;             /* #fafafa */
-  --card: 240 14% 6%;                 /* #0d0d12 */
-  --card-foreground: 0 0% 98%;
-  --popover: 240 14% 6%;
-  --popover-foreground: 0 0% 98%;
-
-  /* Surface variants */
-  --surface: 240 14% 6%;              /* #0d0d12 */
-  --surface-light: 240 15% 9%;        /* #14141b */
-  --surface-hover: 240 16% 12%;       /* #1a1a24 */
+  --color-background: #050508;
+  --color-foreground: #fafafa;
+  --color-card: #0d0d12;
+  --color-card-foreground: #fafafa;
+  --color-popover: #0d0d12;
+  --color-popover-foreground: #fafafa;
 
   /* Primary = leffel.io purple */
-  --primary: 258 90% 66%;             /* #8b5cf6 */
-  --primary-foreground: 0 0% 98%;
-  --accent-purple: 258 90% 66%;
-  --accent-cyan: 187 92% 43%;         /* #06b6d4 */
-  --accent-pink: 328 86% 70%;         /* #f472b6 */
+  --color-primary: #8b5cf6;
+  --color-primary-foreground: #fafafa;
 
-  --secondary: 240 21% 15%;
-  --secondary-foreground: 0 0% 98%;
+  /* Secondary / muted / accent surfaces */
+  --color-secondary: #1e1e2e;
+  --color-secondary-foreground: #fafafa;
+  --color-muted: #14141b;
+  --color-muted-foreground: #a1a1aa;
+  --color-accent: #1e1e2e;
+  --color-accent-foreground: #fafafa;
 
-  --muted: 240 14% 6%;
-  --muted-foreground: 240 5% 65%;     /* #a1a1aa */
+  /* Status */
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #fafafa;
+  --color-success: #22c55e;
 
-  --accent: 240 21% 15%;
-  --accent-foreground: 0 0% 98%;
+  /* Borders / inputs / focus ring */
+  --color-border: #1e1e2e;
+  --color-input: #1e1e2e;
+  --color-ring: #8b5cf6;
 
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 98%;
+  /* Surface variants used in custom utilities below */
+  --color-surface: #0d0d12;
+  --color-surface-light: #14141b;
+  --color-surface-hover: #1a1a24;
 
-  --success: 142 71% 45%;             /* #22c55e */
+  /* Extra accents (cyan / pink) for d3 graph + legend */
+  --color-accent-purple: #8b5cf6;
+  --color-accent-cyan: #06b6d4;
+  --color-accent-pink: #f472b6;
 
-  --border: 240 21% 15%;              /* #1e1e2e */
-  --input: 240 21% 15%;
-  --ring: 258 90% 66%;
+  /* Charts (Recharts) */
+  --color-chart-1: #8b5cf6;
+  --color-chart-2: #06b6d4;
+  --color-chart-3: #f472b6;
+  --color-chart-4: #22c55e;
+  --color-chart-5: #f59e0b;
 
   --radius: 0.75rem;
-
-  --chart-1: 258 90% 66%;
-  --chart-2: 187 92% 43%;
-  --chart-3: 328 86% 70%;
-  --chart-4: 142 71% 45%;
-  --chart-5: 38 92% 50%;
-}
-
-.dark {
-  /* Same values — site is dark-first and leffel.io is permanently dark */
-  --background: 240 33% 3%;
-  --foreground: 0 0% 98%;
-  --card: 240 14% 6%;
-  --card-foreground: 0 0% 98%;
-  --popover: 240 14% 6%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 258 90% 66%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 240 21% 15%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 240 14% 6%;
-  --muted-foreground: 240 5% 65%;
-  --accent: 240 21% 15%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 240 21% 15%;
-  --input: 240 21% 15%;
-  --ring: 258 90% 66%;
 }
 
 @layer base {
   body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
+    background-color: var(--color-background);
+    color: var(--color-foreground);
     font-family: var(--font-sans);
   }
 }
@@ -91,7 +73,7 @@
   background: rgba(13, 13, 18, 0.6);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid hsl(var(--border));
+  border: 1px solid var(--color-border);
 }
 
 .glass-hover {
@@ -99,15 +81,15 @@
 }
 .glass-hover:hover {
   background: rgba(20, 20, 27, 0.75);
-  border-color: hsl(258 90% 66% / 0.3);
+  border-color: rgb(139 92 246 / 0.3);
 }
 
 .glow-accent {
-  box-shadow: 0 0 40px -10px hsl(258 90% 66% / 0.4);
+  box-shadow: 0 0 40px -10px rgb(139 92 246 / 0.4);
 }
 
 .glow-accent-soft {
-  box-shadow: 0 0 24px -8px hsl(258 90% 66% / 0.25);
+  box-shadow: 0 0 24px -8px rgb(139 92 246 / 0.25);
 }
 
 .text-gradient {
@@ -124,7 +106,7 @@
   color: transparent;
 }
 
-/* Animated gradient mesh background — drop-in for hero areas */
+/* Animated gradient mesh background */
 .gradient-mesh {
   position: relative;
   isolation: isolate;
@@ -135,15 +117,15 @@
   inset: -20%;
   z-index: -1;
   background:
-    radial-gradient(at 20% 20%, hsl(258 90% 66% / 0.15) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, hsl(187 92% 43% / 0.10) 0px, transparent 50%),
-    radial-gradient(at 0% 80%, hsl(328 86% 70% / 0.08) 0px, transparent 50%);
+    radial-gradient(at 20% 20%, rgb(139 92 246 / 0.15) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, rgb(6 182 212 / 0.10) 0px, transparent 50%),
+    radial-gradient(at 0% 80%, rgb(244 114 182 / 0.08) 0px, transparent 50%);
   filter: blur(60px);
   opacity: 0.7;
   pointer-events: none;
 }
 
-/* Subtle grid background (kept from previous design) */
+/* Subtle grid background */
 .bg-grid {
   background-size: 40px 40px;
   background-image: linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
@@ -156,17 +138,17 @@
   height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: hsl(var(--background));
+  background: var(--color-background);
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--border));
+  background: var(--color-border);
   border-radius: 5px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(258 90% 66% / 0.5);
+  background: rgb(139 92 246 / 0.5);
 }
 
 ::selection {
-  background: hsl(258 90% 66% / 0.3);
-  color: hsl(var(--foreground));
+  background: rgb(139 92 246 / 0.3);
+  color: var(--color-foreground);
 }
