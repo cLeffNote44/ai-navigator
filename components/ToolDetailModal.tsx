@@ -64,6 +64,46 @@ const ToolDetailModal: React.FC<ToolDetailModalProps> = ({ tool, onClose }) => {
     }
   };
 
+  // Inline formatter: handles **bold**, *italic*, and `code` within a line.
+  // Returns an array of React nodes safe to drop into a parent element.
+  const renderInline = (text: string, keyPrefix: string): React.ReactNode[] => {
+    const tokens: React.ReactNode[] = [];
+    // Order matters: ** before *, and we use a single combined regex so the
+    // matches don't overlap.
+    const pattern = /(\*\*[^*\n]+\*\*|\*[^*\n]+\*|`[^`\n]+`)/g;
+    let last = 0;
+    let i = 0;
+    let m: RegExpExecArray | null;
+    while ((m = pattern.exec(text)) !== null) {
+      if (m.index > last) {
+        tokens.push(text.slice(last, m.index));
+      }
+      const tok = m[0];
+      if (tok.startsWith('**')) {
+        tokens.push(
+          <strong key={`${keyPrefix}-b-${i++}`} className="text-foreground font-semibold">
+            {tok.slice(2, -2)}
+          </strong>
+        );
+      } else if (tok.startsWith('`')) {
+        tokens.push(
+          <code key={`${keyPrefix}-c-${i++}`} className="font-mono text-sm bg-secondary/60 text-foreground px-1.5 py-0.5 rounded">
+            {tok.slice(1, -1)}
+          </code>
+        );
+      } else {
+        tokens.push(
+          <em key={`${keyPrefix}-i-${i++}`} className="italic text-foreground">
+            {tok.slice(1, -1)}
+          </em>
+        );
+      }
+      last = m.index + tok.length;
+    }
+    if (last < text.length) tokens.push(text.slice(last));
+    return tokens;
+  };
+
   const renderMarkdown = (text: string) => {
     return text.split('\n').map((line, index) => {
       if (line.startsWith('#')) {
@@ -72,16 +112,24 @@ const ToolDetailModal: React.FC<ToolDetailModalProps> = ({ tool, onClose }) => {
         return React.createElement(
           `h${level + 2}`,
           { key: index, className: 'font-bold text-foreground mt-8 mb-4 tracking-tight border-l-4 border-primary pl-4' },
-          content
+          renderInline(content, `h${index}`)
         );
       }
       if (line.startsWith('* ') || line.startsWith('- ')) {
-        return <li key={index} className="ml-5 list-disc text-muted-foreground mb-2 leading-relaxed">{line.substring(2)}</li>;
+        return (
+          <li key={index} className="ml-5 list-disc text-muted-foreground mb-2 leading-relaxed">
+            {renderInline(line.substring(2), `li${index}`)}
+          </li>
+        );
       }
       if (line.trim() === '') {
         return <div key={index} className="h-4" />;
       }
-      return <p key={index} className="mb-4 text-muted-foreground leading-relaxed text-lg font-medium">{line}</p>;
+      return (
+        <p key={index} className="mb-4 text-muted-foreground leading-relaxed text-lg font-medium">
+          {renderInline(line, `p${index}`)}
+        </p>
+      );
     });
   };
 
