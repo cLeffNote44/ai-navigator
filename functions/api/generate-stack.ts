@@ -65,20 +65,20 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   // Compact catalog representation - one line per tool, terse format.
   const toolsInfo = tools.map((t) => `${t.id}|${t.name}|${t.category}`).join('\n');
 
-  // Explicit JSON shape example. Smaller models follow concrete examples better
-  // than abstract schema descriptions.
+  // Worked example using an UNRELATED goal so the model adapts to the actual
+  // user goal instead of copying values verbatim. Keys demonstrate exact casing.
   const jsonExample = `{
-  "id": "rag-chatbot",
-  "stackName": "Beginner RAG Chatbot",
-  "description": "A simple chatbot that answers questions from your docs.",
-  "difficulty": "Beginner",
-  "estimatedCost": "Free tier covers most usage",
+  "id": "img-pipeline-demo",
+  "stackName": "Personalized Product Image Pipeline",
+  "description": "Generates branded product images at scale using a fine-tuned diffusion model and CDN delivery.",
+  "difficulty": "Intermediate",
+  "estimatedCost": "~$10-30/month at moderate volume",
   "tools": [
-    {"id": "claude-haiku-4-5", "name": "Claude Haiku 4.5", "justification": "Fast and cheap LLM for the chat responses."},
-    {"id": "pinecone", "name": "Pinecone", "justification": "Stores document embeddings for retrieval."}
+    {"id": "flux-pro", "name": "Flux 1.1 Pro", "justification": "Generates the product images with strong prompt adherence."},
+    {"id": "replicate", "name": "Replicate", "justification": "Hosts and bills per-second for the inference."}
   ],
   "connections": [
-    {"from": "pinecone", "to": "claude-haiku-4-5", "label": "retrieved context"}
+    {"from": "replicate", "to": "flux-pro", "label": "runs inference"}
   ]
 }`;
 
@@ -87,19 +87,23 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 Tools you may pick from (id|name|category, one per line):
 ${toolsInfo}
 
-Pick 3-5 tools FROM THIS LIST that fit the goal. Use the exact ids shown.
+Pick 3-5 tools FROM THIS LIST that fit the goal above. Use the exact ids shown.
 
-Return JSON in EXACTLY this shape (no other text, no markdown):
+Below is a SHAPE EXAMPLE for an UNRELATED goal — match the structure, do NOT copy any values.
 ${jsonExample}
 
-Rules:
-- "difficulty" is one of: Beginner, Intermediate, Advanced.
-- Every tool "id" MUST appear in the list above.
-- Justifications should be one sentence each, beginner-friendly.
-- Stack "id" is a short kebab-case slug.`;
+Hard rules for YOUR response:
+- ALL string fields use proper sentence case or Title Case as shown — NEVER lowercase or kebab-case in human-readable fields.
+- "id" (the stack id, top level) IS kebab-case lowercase, e.g. "ai-customer-chatbot".
+- "stackName" is Title Case, e.g. "AI Customer Service Chatbot" — NEVER kebab-case.
+- "description" is 1-2 complete sentences starting with a capital letter and ending in a period.
+- "difficulty" is exactly: Beginner, Intermediate, or Advanced.
+- Every tool "id" MUST appear verbatim in the list above.
+- "justification" is one complete sentence, beginner-friendly.
+- "estimatedCost" is a short human phrase (e.g. "Free tier covers most usage", "~$5/month").`;
 
   const systemPrompt =
-    'You output ONLY valid JSON, nothing else. No prose, no markdown fences. Match the example shape exactly.';
+    'You output ONLY valid JSON, nothing else. No prose, no markdown fences. Adapt the example structure to the user\'s actual goal — never copy example values.';
 
   async function callModel(): Promise<unknown> {
     // 8B-fast: ~10x faster than 70B-fp8-fast, plenty smart for "pick from list" tasks.
