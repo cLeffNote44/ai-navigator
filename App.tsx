@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import Header, { ActiveTab } from './components/Header';
 import AllToolsPage from './pages/AllToolsPage';
-import ExplorerPage from './pages/ExplorerPage';
 import ConceptsPage from './pages/ConceptsPage';
 import Pathfinder from './components/Pathfinder';
-import DashboardPage from './pages/DashboardPage';
+import LoadingSpinner from './components/LoadingSpinner';
 import ToolDetailModal from './components/ToolDetailModal';
 import { AI_TOOLS } from './constants';
 import {
@@ -16,6 +15,17 @@ import {
   CommandItem,
 } from './components/ui/command';
 import { AITool } from './types';
+
+// Code-split heavy pages: Explorer pulls in d3, Dashboard pulls in recharts.
+// Keeps the initial bundle ~150 kB lighter.
+const ExplorerPage = lazy(() => import('./pages/ExplorerPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+
+const PageFallback = () => (
+  <div className="flex items-center justify-center py-32">
+    <LoadingSpinner />
+  </div>
+);
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('pathfinder');
@@ -48,10 +58,18 @@ const App: React.FC = () => {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-8 py-10">
         {activeTab === 'pathfinder' && <Pathfinder tools={AI_TOOLS} />}
-        {activeTab === 'explorer' && <ExplorerPage tools={AI_TOOLS} onToolSelect={handleToolSelect} />}
+        {activeTab === 'explorer' && (
+          <Suspense fallback={<PageFallback />}>
+            <ExplorerPage tools={AI_TOOLS} onToolSelect={handleToolSelect} />
+          </Suspense>
+        )}
         {activeTab === 'tools' && <AllToolsPage tools={AI_TOOLS} onToolSelect={handleToolSelect} />}
         {activeTab === 'concepts' && <ConceptsPage tools={AI_TOOLS} onToolSelect={handleToolSelect} />}
-        {activeTab === 'dashboard' && <DashboardPage />}
+        {activeTab === 'dashboard' && (
+          <Suspense fallback={<PageFallback />}>
+            <DashboardPage />
+          </Suspense>
+        )}
       </main>
 
       {selectedTool && (

@@ -12,6 +12,24 @@ const Pathfinder: React.FC<PathfinderProps> = ({ tools }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<TechStack | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
+
+  const saveStack = () => {
+    if (!result) return;
+    try {
+      const existing = JSON.parse(localStorage.getItem('savedStacks') || '[]') as TechStack[];
+      // Don't double-save the same id.
+      if (existing.some((s) => s.id === result.id)) {
+        setIsSaved(true);
+        return;
+      }
+      const next = [...existing, result];
+      localStorage.setItem('savedStacks', JSON.stringify(next));
+      setIsSaved(true);
+    } catch {
+      // localStorage unavailable; degrade silently.
+    }
+  };
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,6 +40,7 @@ const Pathfinder: React.FC<PathfinderProps> = ({ tools }) => {
     try {
       const stack = await generateGuidedStack(goal, tools);
       setResult(stack);
+      setIsSaved(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -166,10 +185,14 @@ const Pathfinder: React.FC<PathfinderProps> = ({ tools }) => {
           <div className="bg-primary p-8 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6 glow-accent">
              <div>
                 <h4 className="text-2xl font-bold text-primary-foreground">Ready to start building?</h4>
-                <p className="text-primary-foreground/80">We've selected these tools because they have the best documentation for beginners.</p>
+                <p className="text-primary-foreground/80">Save this stack to your dashboard or check the tool docs to keep going.</p>
              </div>
-             <button className="px-8 py-4 bg-background text-primary font-bold uppercase tracking-widest rounded-xl hover:scale-105 transition-transform whitespace-nowrap shadow-xl">
-                Get Documentation Pack
+             <button
+               onClick={saveStack}
+               disabled={isSaved}
+               className="px-8 py-4 bg-background text-primary font-bold uppercase tracking-widest rounded-xl hover:scale-105 transition-transform whitespace-nowrap shadow-xl disabled:opacity-70 disabled:hover:scale-100"
+             >
+                {isSaved ? '✓ Saved to Dashboard' : 'Save This Stack'}
              </button>
           </div>
         </div>
