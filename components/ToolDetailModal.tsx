@@ -9,19 +9,48 @@ interface ToolDetailModalProps {
   onClose: () => void;
 }
 
+const CACHE_PREFIX = 'tool-details:';
+const CACHE_VERSION = 'v1';
+
 const ToolDetailModal: React.FC<ToolDetailModalProps> = ({ tool, onClose }) => {
   const [details, setDetails] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const fetchDetails = async () => {
-      setIsLoading(true);
-      const fetchedDetails = await getToolDetails(tool.name);
-      setDetails(fetchedDetails);
-      setIsLoading(false);
-    };
+    const cacheKey = `${CACHE_PREFIX}${CACHE_VERSION}:${tool.id}`;
 
-    fetchDetails();
+    let cancelled = false;
+
+    // Cache hit -> render instantly, no Workers AI request.
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        setDetails(cached);
+        setIsLoading(false);
+        return;
+      }
+    } catch {
+      // localStorage may be unavailable (private mode, quota); fall through to fetch.
+    }
+
+    setIsLoading(true);
+    getToolDetails(tool.name).then((text) => {
+      if (cancelled) return;
+      setDetails(text);
+      setIsLoading(false);
+      // Only cache successful responses.
+      if (text && !text.startsWith('Failed')) {
+        try {
+          localStorage.setItem(cacheKey, text);
+        } catch {
+          // Quota exceeded etc. - not fatal.
+        }
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [tool]);
 
   const findToolById = (id: string) => AI_TOOLS.find(t => t.id === id);
