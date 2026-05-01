@@ -98,55 +98,61 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     return Response.json({ error: 'invalid JSON body' }, { status: 400 });
   }
 
-  const toolsInfo = tools.map((t) => `${t.name} (id: ${t.id}, category: ${t.category})`).join(', ');
+  // Compact catalog representation - one line per tool, terse format.
+  // Cuts the prompt size roughly in half vs. the full "name (id: x, category: y)" form.
+  const toolsInfo = tools.map((t) => `${t.id}|${t.name}|${t.category}`).join('\n');
 
-  const userPrompt = `A user wants to achieve this goal: "${goal}"
+  const userPrompt = `Goal: "${goal}"
 
-Using ONLY these tools from our catalog: ${toolsInfo}
+Catalog (id|name|category, one per line):
+${toolsInfo}
 
-Architect a beginner-friendly tech stack.
-- Select 3-5 tools that are actually in the list above.
-- Suggest a cohesive architecture.
-- Provide clear justifications geared toward new developers.
-- Use real tool ids from the provided list.
-- "id" of the stack itself should be a short kebab-case slug.
-- "difficulty" must be exactly one of: Beginner, Intermediate, Advanced.
+Architect a beginner-friendly tech stack of 3-5 tools FROM THE CATALOG ABOVE.
+- Use real ids exactly as given.
+- "difficulty" must be exactly: Beginner, Intermediate, or Advanced.
+- "id" for the stack is a short kebab-case slug.
+- Be concise. Return ONLY JSON matching the schema. No prose, no markdown fence.`;
 
-Make it practical, cost-effective, and educational. Return ONLY valid JSON matching the schema. No prose.`;
+  const systemPrompt =
+    'You are an AI architect. Reply with VALID JSON ONLY matching the schema. No explanations, no markdown fences.';
 
-  try {
+  async function callModel(): Promise<unknown> {
     const result = (await env.AI.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
       messages: [
-        {
-          role: 'system',
-          content:
-            'You are a senior AI architect. You ALWAYS respond with valid JSON only, conforming exactly to the requested schema. Never include explanations or markdown.',
-        },
+        { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
-      max_tokens: 1500,
+      max_tokens: 800,
       response_format: { type: 'json_schema', json_schema: jsonSchema },
     })) as { response?: string };
 
     const raw = result.response ?? '';
-    let parsed: unknown;
     try {
-      parsed = JSON.parse(raw);
+      return JSON.parse(raw);
     } catch {
-      parsed = JSON.parse(extractJson(raw));
+      return JSON.parse(extractJson(raw));
     }
-
-    const validated = TechStackSchema.parse(parsed);
-    return Response.json(validated);
-  } catch (err) {
-    return Response.json(
-      {
-        error:
-          err instanceof Error
-            ? `Could not architect that stack: ${err.message}`
-            : 'inference failed',
-      },
-      { status: 502 }
-    );
   }
+
+  // One model call + one retry on parse/validation failure.
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const parsed = await callModel();
+      const validated = TechStackSchema.parse(parsed);
+      return Response.json(validated);
+    } catch (err) {
+      lastError = err;
+    }
+  }
+
+  return Response.json(
+    {
+      error:
+        lastError instanceof Error
+          ? `The AI returned an invalid stack format. Try a different goal phrasing.`
+          : 'inference failed',
+    },
+    { status: 502 }
+  );
 };

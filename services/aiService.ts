@@ -1,4 +1,4 @@
-import { AITool, TechStack } from '../types';
+import { AITool, TechStack, ToolCategory } from '../types';
 
 export async function getToolDetails(toolName: string): Promise<string> {
   try {
@@ -20,7 +20,12 @@ export async function getToolDetails(toolName: string): Promise<string> {
 }
 
 export async function generateGuidedStack(goal: string, tools: AITool[]): Promise<TechStack> {
-  const catalog = tools.map((t) => ({ id: t.id, name: t.name, category: t.category }));
+  // Don't send concepts to the model — they aren't pickable "tools" and just
+  // bloat the prompt. Concept entries (LLM, RAG, MCP, etc.) live in the
+  // catalog as educational items only.
+  const catalog = tools
+    .filter((t) => t.category !== ToolCategory.CONCEPT)
+    .map((t) => ({ id: t.id, name: t.name, category: t.category }));
 
   const res = await fetch('/api/generate-stack', {
     method: 'POST',
@@ -29,8 +34,17 @@ export async function generateGuidedStack(goal: string, tools: AITool[]): Promis
   });
 
   if (!res.ok) {
-    const data = (await res.json().catch(() => ({}))) as { error?: string };
-    throw new Error(data.error ?? "I couldn't architect that stack right now. Please try a different goal.");
+    // Cloudflare returns HTML on 502/504; fall back to a friendly message.
+    let message = "I couldn't architect that stack right now. Please try a different goal.";
+    try {
+      const data = (await res.json()) as { error?: string };
+      if (data.error) message = data.error;
+    } catch {
+      if (res.status === 502 || res.status === 504) {
+        message = 'The AI took too long to respond. Try a more specific goal, or try again in a moment.';
+      }
+    }
+    throw new Error(message);
   }
 
   return (await res.json()) as TechStack;

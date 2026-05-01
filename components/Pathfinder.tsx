@@ -107,8 +107,24 @@ const Pathfinder: React.FC<PathfinderProps> = ({ tools }) => {
       </div>
 
       {error && (
-        <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive text-sm text-center">
-          {error}
+        <div className="p-6 bg-destructive/10 border-2 border-destructive/40 rounded-2xl text-center space-y-4">
+          <div className="flex items-center justify-center gap-2">
+            <svg className="w-5 h-5 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+            </svg>
+            <p className="text-destructive font-semibold text-base">Couldn't generate a roadmap</p>
+          </div>
+          <p className="text-destructive/90 text-sm max-w-md mx-auto">{error}</p>
+          <button
+            onClick={() => {
+              setError(null);
+              handleGenerate({ preventDefault: () => {} } as React.FormEvent);
+            }}
+            disabled={isGenerating || !goal.trim()}
+            className="px-5 py-2 bg-destructive/20 hover:bg-destructive/30 border border-destructive/40 text-destructive font-bold uppercase tracking-widest rounded-lg text-xs transition-colors disabled:opacity-50"
+          >
+            Try Again
+          </button>
         </div>
       )}
 
