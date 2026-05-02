@@ -2,6 +2,8 @@
 
 **A beginner-friendly map of the 2026 AI ecosystem — generate architectures, explore tools, and follow a learning path.**
 
+🌐 **Live:** [ai-navigator.leffel.io](https://ai-navigator.leffel.io)
+
 Tell the Pathfinder what you want to build and it returns a working stack with cost estimate and execution flow. Browse 154 tools and concepts in the Library, see how they connect in the Ecosystem map, and track your progress on the Dashboard.
 
 Built with **React 19**, **shadcn/ui**, **Tailwind v4**, and **Cloudflare Workers AI** — no API keys, no third-party services.
