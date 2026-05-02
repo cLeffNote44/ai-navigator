@@ -10,6 +10,18 @@ interface CatalogTool {
   category: string;
 }
 
+const INFERENCE_TIMEOUT_MS = 30_000;
+const MAX_GOAL_LENGTH = 500;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error('inference timeout')), ms)
+    ),
+  ]);
+}
+
 const TechStackSchema = z.object({
   id: z.string(),
   stackName: z.string(),
@@ -53,10 +65,16 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     if (typeof body.goal !== 'string' || !body.goal.trim()) {
       return Response.json({ error: 'goal is required' }, { status: 400 });
     }
+    if (body.goal.trim().length > MAX_GOAL_LENGTH) {
+      return Response.json(
+        { error: `goal must be ${MAX_GOAL_LENGTH} characters or fewer` },
+        { status: 400 }
+      );
+    }
     if (!Array.isArray(body.tools) || body.tools.length === 0) {
       return Response.json({ error: 'tools catalog is required' }, { status: 400 });
     }
-    goal = body.goal.trim().slice(0, 500);
+    goal = body.goal.trim();
     tools = body.tools as CatalogTool[];
   } catch {
     return Response.json({ error: 'invalid JSON body' }, { status: 400 });
@@ -109,14 +127,17 @@ Hard rules for YOUR response:
     // 8B-fast: ~10x faster than 70B-fp8-fast, plenty smart for "pick from list" tasks.
     // Drop json_schema mode (slow, often unsupported on smaller models) in favor of
     // json_object + concrete example in the prompt.
-    const result = (await env.AI.run('@cf/meta/llama-3.1-8b-instruct-fast', {
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      max_tokens: 800,
-      response_format: { type: 'json_object' },
-    })) as { response?: string };
+    const result = (await withTimeout(
+      env.AI.run('@cf/meta/llama-3.1-8b-instruct-fast', {
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        max_tokens: 800,
+        response_format: { type: 'json_object' },
+      }),
+      INFERENCE_TIMEOUT_MS
+    )) as { response?: string };
 
     const raw = result.response ?? '';
     try {
@@ -138,13 +159,14 @@ Hard rules for YOUR response:
     }
   }
 
+  const timedOut =
+    lastError instanceof Error && lastError.message === 'inference timeout';
   return Response.json(
     {
-      error:
-        lastError instanceof Error
-          ? `The AI returned an invalid stack format. Try a different goal phrasing.`
-          : 'inference failed',
+      error: timedOut
+        ? 'The AI took too long to respond. Please try again.'
+        : 'The AI returned an invalid stack format. Try a different goal phrasing.',
     },
-    { status: 502 }
+    { status: timedOut ? 504 : 502 }
   );
 };

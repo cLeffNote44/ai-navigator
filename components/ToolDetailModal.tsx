@@ -17,6 +17,14 @@ const ToolDetailModal: React.FC<ToolDetailModalProps> = ({ tool, onClose }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  useEffect(() => {
     const cacheKey = `${CACHE_PREFIX}${CACHE_VERSION}:${tool.id}`;
 
     let cancelled = false;
@@ -139,6 +147,9 @@ const ToolDetailModal: React.FC<ToolDetailModalProps> = ({ tool, onClose }) => {
       onClick={onClose}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tool-detail-title"
         className="glass rounded-3xl shadow-2xl glow-accent-soft w-full max-w-5xl max-h-full flex flex-col transform transition-all animate-in fade-in zoom-in-95 duration-500 overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
@@ -147,7 +158,7 @@ const ToolDetailModal: React.FC<ToolDetailModalProps> = ({ tool, onClose }) => {
              <div className={`w-2 h-16 rounded-full ${CATEGORY_COLORS[tool.category].split(' ')[0].replace('/10', '')}`}></div>
              <div>
                 <span className="text-[10px] font-mono text-primary uppercase tracking-[0.2em] mb-1 block">{tool.category}</span>
-                <h2 className="text-4xl font-bold text-foreground tracking-tight">{tool.name}</h2>
+                <h2 id="tool-detail-title" className="text-4xl font-bold text-foreground tracking-tight">{tool.name}</h2>
              </div>
           </div>
           <div className="flex items-center gap-8">
@@ -155,7 +166,7 @@ const ToolDetailModal: React.FC<ToolDetailModalProps> = ({ tool, onClose }) => {
                 <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mb-1">Learning Curve</p>
                 <p className={`font-bold uppercase tracking-tighter ${getDifficultyColor(tool.difficulty)}`}>{tool.difficulty}</p>
              </div>
-             <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-all bg-secondary hover:bg-secondary/70 rounded-2xl p-3 active:scale-90">
+             <button onClick={onClose} aria-label="Close" className="text-muted-foreground hover:text-foreground transition-all bg-secondary hover:bg-secondary/70 rounded-2xl p-3 active:scale-90">
                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
                </svg>
